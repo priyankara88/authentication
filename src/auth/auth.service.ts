@@ -5,10 +5,15 @@ import { Model } from 'mongoose';
 import { UserEntity, Userlogin } from './entities/userentity';
 import * as bcrypt from 'bcrypt';
 import { LoginUser } from './dto/login.user.dto';
+import { JwtService } from '@nestjs/jwt';
+import { log } from 'node:console';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<User>,
+    private jwtservice: JwtService,
+  ) {}
 
   async signup(userdto): Promise<UserEntity> {
     const { name, email, password } = userdto;
@@ -48,6 +53,22 @@ export class AuthService {
     if (!passwordmach) {
       throw new BadRequestException('Password Not Match');
     }
-    return { name: 'success login' };
+
+    //const accesstoken = await this.jwtservice.sign({ email });
+    const d = await this.loginuservv(email, password);
+
+    return { name: 'success' };
+  }
+
+  async loginuservv(email, password) {
+    const payload = JSON.stringify({ email: email, sub: password });
+    try {
+      const token = this.jwtservice.sign(payload);
+      console.log('Token generated:', token);
+      return { access_token: token };
+    } catch (err) {
+      console.error('JWT sign error:', err);
+      throw err;
+    }
   }
 }
