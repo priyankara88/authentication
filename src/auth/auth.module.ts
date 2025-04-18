@@ -6,6 +6,7 @@ import { User, UserSchema } from './schema/user.shemas';
 import configuration from 'src/config/configuration';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { UserToken, UserTokenSchema } from './schema/usertoken.schema';
 
 @Module({
   imports: [
@@ -16,6 +17,10 @@ import { JwtModule } from '@nestjs/jwt';
       {
         name: User.name,
         schema: UserSchema,
+      },
+      {
+        name: UserToken.name,
+        schema: UserTokenSchema,
       },
     ]),
   ],
