@@ -14,24 +14,6 @@ import { JwtModule } from '@nestjs/jwt';
       load: [configuration],
     }),
 
-    JwtModule.registerAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: async (config: ConfigService) => {
-        const secret = config.get<string>('jwt.secret');
-        const expiresIn = config.get<string>('jwt.expiresIn') || '60m';
-        console.log('✅ JWT Secret:', secret, expiresIn);
-        if (!secret) {
-          throw new Error('JWT secret is not defined in environment variables');
-        }
-        return {
-          secret,
-          expiresIn,
-        };
-      },
-      global: true,
-    }),
-
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

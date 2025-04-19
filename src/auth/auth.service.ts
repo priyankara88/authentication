@@ -7,11 +7,14 @@ import * as bcrypt from 'bcrypt';
 import { LoginUser } from './dto/login.user.dto';
 import { JwtService } from '@nestjs/jwt';
 import { log } from 'node:console';
+import { UserToken } from './schema/usertoken.schema';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
+    @InjectModel(UserToken.name) private userToken: Model<UserToken>,
     private jwtservice: JwtService,
   ) {}
 
@@ -56,12 +59,29 @@ export class AuthService {
 
     //const accesstoken = await this.jwtservice.sign({ email });
     const d = await this.loginuservv(email, password);
+    const expirdate = new Date();
+    expirdate.setDate(expirdate.getDate() + 5);
 
-    return { name: 'success' };
+    const reffreshtoken = uuidv4();
+
+    const reffreshtokenresukt = await this.createreffreshtoken(
+      isEmailInUse._id,
+      reffreshtoken,
+      expirdate,
+      d.access_token,
+    );
+
+    return {
+      name: isEmailInUse.name,
+      token: reffreshtokenresukt.access_token,
+      reffreshtoken: reffreshtokenresukt.reffreshtoken,
+    };
   }
 
   async loginuservv(email, password) {
     const payload = JSON.stringify({ email: email, sub: password });
+    console.log('payload', payload);
+
     try {
       const token = this.jwtservice.sign(payload);
       console.log('Token generated:', token);
@@ -70,5 +90,15 @@ export class AuthService {
       console.error('JWT sign error:', err);
       throw err;
     }
+  }
+
+  async createreffreshtoken(userid, reffreshtoken, date, access_token) {
+    const result = await this.userToken.create({
+      userid,
+      token: reffreshtoken,
+      expiredate: date,
+    });
+
+    return { reffreshtoken, access_token };
   }
 }

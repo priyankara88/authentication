@@ -6,4 +6,6 @@ export class UserEntity {
 
 export class Userlogin {
   name: string;
+  token: string;
+  reffreshtoken: string;
 }
