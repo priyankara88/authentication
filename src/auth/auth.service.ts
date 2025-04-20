@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schema/user.shemas';
 import { Model } from 'mongoose';
@@ -9,6 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { log } from 'node:console';
 import { UserToken } from './schema/usertoken.schema';
 import { v4 as uuidv4 } from 'uuid';
+import { reffreshtokendto } from './dto/reffresh.token.dto';
+import { promises } from 'node:dns';
 
 @Injectable()
 export class AuthService {
@@ -58,7 +64,7 @@ export class AuthService {
     }
 
     //const accesstoken = await this.jwtservice.sign({ email });
-    const d = await this.loginuservv(email, password);
+    const d = await this.loginuservv(isEmailInUse._id);
     const expirdate = new Date();
     expirdate.setDate(expirdate.getDate() + 5);
 
@@ -78,8 +84,8 @@ export class AuthService {
     };
   }
 
-  async loginuservv(email, password) {
-    const payload = JSON.stringify({ email: email, sub: password });
+  async loginuservv(userid) {
+    const payload = JSON.stringify({ userid });
     console.log('payload', payload);
 
     try {
@@ -100,5 +106,17 @@ export class AuthService {
     });
 
     return { reffreshtoken, access_token };
+  }
+
+  async reffreshtoken(reffreshtokendto: reffreshtokendto) {
+    const rfToken = await this.userToken.findOne({
+      token: reffreshtokendto.reffreshtoken,
+      expiredate: { $gte: new Date() },
+    });
+
+    if (!rfToken) {
+      throw new UnauthorizedException();
+    }
+    return this.loginuservv(rfToken._id);
   }
 }

@@ -9,3 +9,7 @@ export class Userlogin {
   token: string;
   reffreshtoken: string;
 }
+
+export class UserRffreshToken {
+  token: string;
+}
